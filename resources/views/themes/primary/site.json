@@ -1,0 +1,499 @@
+{
+    "email_confirm": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Email Confirmation",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "mobile_confirm": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Mobile Confirmation",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "user_ban":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "User Ban Section",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text"
+        }
+    },
+    "2fa_confirm": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "2FA Confirmation",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "kyc": {
+        "builder": true,
+        "no_selection":true,
+        "name": "KYC Instruction",
+        "content": {
+            "Verification_required_heading": "text",
+            "Verification_required_details": "textarea",
+            "Verification_pending_heading": "text",
+            "Verification_pending_details": "textarea"
+        }
+    },
+    "policy_pages": {
+        "builder": true,
+        "no_selection":true,
+        "name": "Policy Pages",
+        "element": {
+            "title": "text",
+            "sub_title":"text",
+            "details": "textarea-editor",
+            "modal": false
+        }
+    },
+    "banner": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Banner Section",
+        "content"     : {
+            "images": {
+                "background_image":{
+                    "size": "1920x1280"
+                },
+                "thumb_top_left":{
+                    "size": "200x270"
+                },
+                "thumb_top_right":{
+                    "size": "250x180"
+                },
+                "thumb_bottom_left":{
+                    "size": "180x180"
+                },
+                "thumb_bottom_right":{
+                    "size": "180x230"
+                },
+                "thumb_center":{
+                    "size": "1000x565"
+                }
+            },
+            "title"             : "text",
+            "placeholder_text"  : "text",
+            "search_button_name": "text"
+        }
+    },
+    "why_choose": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Why Choose Us Section",
+        "content" : {
+            "images": {
+                "background_image": {
+                    "size": "2500x1500"
+                },
+                "image": {
+                    "size":"726x777"
+                }
+            },
+            "title"   : "text",
+            "subtitle": "text"
+        },
+        "element": {
+            "icon"         : "icon",
+            "principle"    : "text",
+            "our_assurance": "textarea",
+            "modal"        : true
+        }
+    },
+    "popular_collection": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Popular Collection Section",
+        "content"     : {
+            "title"   : "text",
+            "subtitle": "text"
+        }
+    },
+    "bundle_offer": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Bundle Offer Section",
+        "content"     : {
+            "images": {
+                "background_image": {
+                    "size": "1920x1280"
+                }
+            },
+            "heading"   : "text",
+            "subheading": "text"
+        },
+        "element": {
+            "icon"       : "icon",
+            "title"      : "text",
+            "description": "textarea",
+            "modal"      : true
+        }
+    },
+    "call_to_action": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Buy CTA Section",
+        "content"     : {
+            "images":{
+                "bg_image":{
+                    "size": "1920x1080"
+                }
+            },
+            "heading"    : "text",
+            "subheading" : "text",
+            "description": "textarea",
+            "link_text"  : "text"
+        }
+    },
+    "contributor": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Top Contributor Section",
+        "content"     : {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"   : "text",
+            "subheading": "text"
+        }
+    },
+    "call_to_sell": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Sell CTA Section",
+        "content"     : {
+            "images":{
+                "image": {
+                    "size":"726x662"
+                }
+            },
+            "heading"    : "text",
+            "subheading" : "text",
+            "description": "textarea",
+            "link_text"  : "text"
+        }
+    },
+    "footer":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Footer Section",
+        "content":{
+            "images":{
+                "bg_image":{
+                    "size":"1920x1280"
+                }
+            },
+            "description"   : "textarea",
+            "copyright_text": "text"
+        },
+        "element":{
+            "social_site_icon": "icon",
+            "social_site_link": "text",
+            "modal"           : true
+        }
+    },
+    "contact_us": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Contact Us",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"500x750"
+                },
+                "image":{
+                    "size":"700x700"
+                }
+            },
+            "breadcrumb_heading"   : "text",
+            "breadcrumb_subheading": "text",
+            "address"              : "text",
+            "email"                : "text",
+            "contact_number"       : "text",
+            "submit_button_text"   : "text"
+        }
+    },
+    "breadcrumb":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Breadcrumb Section",
+        "content"     : {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1280"
+                }
+            }
+        }
+    },
+    "user_dashboard":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "User Dashboard",
+        "content":{
+            "images":{
+                "balance":{
+                    "size": "120x115"
+                },
+                "deposit":{
+                    "size": "120x103"
+                },
+                "withdraw":{
+                    "size": "120x120"
+                },
+                "earning":{
+                    "size": "120x119"
+                },
+                "referral":{
+                    "size": "120x107"
+                },
+                "asset":{
+                    "size": "120x104"
+                }
+            }
+        }
+    },
+    "login": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Login Page",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "forgot_password": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Forgot Password",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "code_verification": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Code Verification",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "password_reset": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Password Reset",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "register": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Register Section",
+        "content": {
+            "images":{
+                "bg_image":{
+                    "size":"1920x1080"
+                },
+                "image":{
+                    "size":"1920x1280"
+                }
+            },
+            "heading"           : "text",
+            "subheading"        : "text",
+            "submit_button_text": "text"
+        }
+    },
+    "plan":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Plan Page",
+        "content":{
+            "images":{
+                "card_bg":{
+                    "size":"500x750"
+                }
+            },
+            "page_title": "text",
+            "subtitle"  : "text"
+        }
+    },
+    "profile_setting": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Profile Setting",
+        "content":{
+            "images":{
+                "image":{
+                    "size":"725x800"
+                }
+            },
+            "submit_button_text": "text"
+        }
+    },
+    "change_password":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "User Password Change",
+        "content":{
+            "images":{
+                "image":{
+                    "size":"725x785"
+                }
+            },
+            "submit_button_text":"text"
+        }
+    },
+    "plan_payment": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Plan Purchase Page",
+        "content": {
+            "images":{
+                "image":{
+                    "size":"725x590"
+                }
+            }
+        }
+    },
+    "deposit":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Deposit Page",
+        "content": {
+            "images":{
+                "image":{
+                    "size":"725x590"
+                }
+            }
+        }
+    },
+    "withdraw":{
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Withdrawal Page",
+        "content": {
+            "images":{
+                "image":{
+                    "size":"725x730"
+                }
+            }
+        }
+    },
+    "default_user_cover": {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Default User Cover Image",
+        "content": {
+            "images":{
+                "image":{
+                    "size": "1920x500",
+                    "thumb" : "450x120"
+                }
+            }
+        } 
+    },
+    "default_collection" : {
+        "builder"     : true,
+        "no_selection": true,
+        "name"        : "Default Collection Image",
+        "content" : {
+            "images": {
+                "first_image" : {
+                    "size" : ""
+                },
+                "second_image" : {
+                    "size" : ""
+                },
+                "third_image" : {
+                    "size" : ""
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+.verification-code-form input {
+    display: block;
+    height: 50px;
+    margin-right: 8px;
+    text-align: center;
+    font-size: 18px;
+    min-width: 0;
+
+    &:last-child {
+        margin-right: 0;
+    }
+}
+
+/* responsive code for this card */
+
+@media (max-width:375px) {
+    .verification-code-form input {
+        height: 46px;
+        margin-right: 3px;
+        font-size: 14px;
+    }
+}

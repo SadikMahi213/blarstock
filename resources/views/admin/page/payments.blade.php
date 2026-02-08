@@ -1,0 +1,373 @@
+@extends('admin.layouts.master')
+
+@section('master')
+    @if(request()->routeIs('admin.payment.index'))
+        {{-- <div class="col-12">
+            <div class="dashboard-widget-row">
+                <a href="{{ route('admin.payment.done') }}" class="dashboard-widget-2 dashboard-widget-2__success">
+                    <div class="dashboard-widget-2__icon">
+                        <i class="ti ti-wallet"></i>
+                    </div>
+                    <h3 class="dashboard-widget-2__number">{{ $setting->cur_sym }}{{ showAmount($done) }}</h3>
+                    <p class="dashboard-widget-2__txt">@lang('Total Paymented Amount')</p>
+                    <div class="dashboard-widget-2__vector">
+                        <img src="{{ asset('assets/admin/images/completed.png') }}" alt="Image">
+                    </div>
+                </a>
+                <a href="{{ route('admin.payment.pending') }}" class="dashboard-widget-2 dashboard-widget-2__warning">
+                    <div class="dashboard-widget-2__icon">
+                        <i class="ti ti-rotate-clockwise-2"></i>
+                    </div>
+                    <h3 class="dashboard-widget-2__number">{{ $setting->cur_sym }}{{ showAmount($pending) }}</h3>
+                    <p class="dashboard-widget-2__txt">@lang('Total Pending Payment Amount')</p>
+                    <div class="dashboard-widget-2__vector">
+                        <img src="{{ asset('assets/admin/images/pending.png') }}" alt="Image">
+                    </div>
+                </a>
+                <a href="{{ route('admin.payment.canceled') }}" class="dashboard-widget-2 dashboard-widget-2__danger">
+                    <div class="dashboard-widget-2__icon">
+                        <i class="ti ti-x"></i>
+                    </div>
+                    <h3 class="dashboard-widget-2__number">{{ $setting->cur_sym }}{{ showAmount($canceled) }}</h3>
+                    <p class="dashboard-widget-2__txt">@lang('Total Cancelled Payment Amount')</p>
+                    <div class="dashboard-widget-2__vector">
+                        <img src="{{ asset('assets/admin/images/cancelled.png') }}" alt="Image">
+                    </div>
+                </a>
+                <a href="{{ route('admin.payment.index') }}" class="dashboard-widget-2 dashboard-widget-2__info">
+                    <div class="dashboard-widget-2__icon">
+                        <i class="ti ti-percentage"></i>
+                    </div>
+                    <h3 class="dashboard-widget-2__number">{{ $setting->cur_sym }}{{ showAmount($charge) }}</h3>
+                    <p class="dashboard-widget-2__txt">@lang('Total Charge for Payment Amount')</p>
+                    <div class="dashboard-widget-2__vector">
+                        <img src="{{ asset('assets/admin/images/charge.png') }}" alt="Image">
+                    </div>
+                </a>
+            </div>
+        </div> --}}
+
+        <div class="col-12">
+            <div class="row g-lg-4 g-3">
+                <div class="col-xl-3 col-sm-6">
+                    <a href="{{ route('admin.payment.done') }}" class="dashboard-widget-3 dashboard-widget-3__success">
+                        <div class="dashboard-widget-3__top">
+                            <h3 class="dashboard-widget-3__number">{{ $setting->cur_sym . showAmount($done) }}</h3>
+                            <div class="dashboard-widget-3__icon">
+                                <i class="ti ti-circle-check"></i>
+                            </div>
+                        </div>
+                        <p class="dashboard-widget-3__txt">@lang('Done Payment Amount')</p>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <a href="{{ route('admin.payment.index') }}" class="dashboard-widget-3 dashboard-widget-3__info">
+                        <div class="dashboard-widget-3__top">
+                            <h3 class="dashboard-widget-3__number">{{ $setting->cur_sym . showAmount($charge) }}</h3>
+                            <div class="dashboard-widget-3__icon">
+                                <i class="ti ti-coins"></i>
+                            </div>
+                        </div>
+                        <p class="dashboard-widget-3__txt">@lang('Charge for Payment')</p>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <a href="{{ route('admin.payment.pending') }}" class="dashboard-widget-3 dashboard-widget-3__warning">
+                        <div class="dashboard-widget-3__top">
+                            <h3 class="dashboard-widget-3__number">{{ $setting->cur_sym . showAmount($pending) }}</h3>
+                            <div class="dashboard-widget-3__icon">
+                                <i class="ti ti-rotate-clockwise-2"></i>
+                            </div>
+                        </div>
+                        <p class="dashboard-widget-3__txt">@lang('Pending Payment Amount')</p>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <a href="{{ route('admin.payment.canceled') }}" class="dashboard-widget-3 dashboard-widget-3__danger">
+                        <div class="dashboard-widget-3__top">
+                            <h3 class="dashboard-widget-3__number">{{ $setting->cur_sym . showAmount($canceled) }}</h3>
+                            <div class="dashboard-widget-3__icon">
+                                <i class="ti ti-circle-x"></i>
+                            </div>
+                        </div>
+                        <p class="dashboard-widget-3__txt">@lang('Cancelled Payment Amount')</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <div class="col-12">
+        <div class="table-responsive scroll">
+            <table class="table table--striped table-borderless table--responsive--sm">
+                <thead>
+                    <tr>
+                        <th>@lang('User')</th>
+                        <th>@lang('Gateway') | @lang('Transaction')</th>
+                        <th>@lang('Launched')</th>
+                        <th>@lang('Amount')</th>
+                        <th>@lang('Conversion')</th>
+                        <th>@lang('Status')</th>
+                        <th>@lang('Action')</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($payments as $payment)
+                        <tr>
+                            <td>
+                                <div class="table-card-with-image">
+                                    <div class="table-card-with-image__img">
+                                        <img src="{{ getImage(getFilePath('userProfile').'/'.$payment->user->image, getFileSize('userProfile'), true) }}" alt="Image">
+                                    </div>
+                                    <div class="table-card-with-image__content">
+                                        <p class="fw-semibold">{{ __($payment->user->fullname) }}</p>
+                                        <p class="fw-semibold">
+                                            <a href="{{ appendQuery('search', $payment->user->username) }}"> <small>@</small>{{ $payment->user->username }}</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <a href="{{ appendQuery('method', $payment->gateway?->alias ?? '') }}" class="fw-semibold text--base">{{ __($payment->gateway?->name ?? '') }}</a>
+                                    <p>{{ $payment->trx }}</p>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <p>{{ showDateTime($payment->created_at) }}</p>
+                                    <p>{{ diffForHumans($payment->created_at) }}</p>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <p>{{ __($setting->cur_sym) }}{{ showAmount($payment->amount ) }}  + <span class="text--danger" title="@lang('Charge')">{{ __($setting->cur_sym) }}{{ showAmount($payment->charge)}}</span></p>
+                                    <p class="fw-semibold" title="@lang('Amount with charge')">{{ showAmount($payment->final_amo) }} {{ __($setting->site_cur) }}</p>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <p>1 {{ __($setting->site_cur) }} = {{ showAmount($payment->rate) }} {{__($payment->method_currency)}}</p>
+                                    <p class="fw-semibold">{{ showAmount($payment->final_amo) }} {{ __($payment->method_currency) }}</p>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    @php echo $payment->statusBadge; @endphp
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="#depositDetails" class="btn btn--sm btn-outline--base detailBtn"
+                                        data-bs-toggle      = "offcanvas"
+                                        data-date           = "{{ showDateTime($payment->created_at) }}"
+                                        data-trx            = "{{ $payment->trx }}"
+                                        data-username       = "{{ $payment->user?->username }}"
+                                        data-method         = "{{ __($payment->gateway?->name) }}"
+                                        data-amount         = "{{ $payment->amount }} {{ __($setting->site_cur) }}"
+                                        data-charge         = "{{ showAmount($payment->charge ) }} {{ __($setting->site_cur) }}"
+                                        data-after_charge   = "{{ showAmount($payment->amount + $payment->charge ) }} {{ __($setting->site_cur) }}"
+                                        data-rate           = "1 {{ __($setting->site_cur) }} = {{ showAmount($payment->rate) }} {{__($payment->baseCurrency()) }}"
+                                        data-payable        = "{{ showAmount($payment->final_amo) }} {{ __($payment->method_currency) }}"
+                                        data-status         = "{{ $payment->status }}"
+                                        data-user_data      = "{{ json_encode($payment->details) }}"
+                                        data-admin_feedback = "{{ $payment->admin_feedback }}">
+
+                                        <i class="ti ti-info-square-rounded"></i> @lang('Details')
+                                    </a>
+
+                                    @if ($payment->status == ManageStatus::PAYMENT_PENDING)
+                                        <div class="custom--dropdown">
+                                            <button class="btn btn--icon btn--sm btn--base" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
+
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <button class="dropdown-item decisionBtn" data-question="@lang('Do you confirm the approval of this transaction')?" data-action="{{ route('admin.payment.approve', $payment->id) }}"><span class="dropdown-icon">
+                                                        <i class="ti ti-circle-check text--success"></i></span> @lang('Approve')
+                                                    </button>
+                                                </li>
+                                                <li> 
+                                                    <button class="dropdown-item cancelBtn" data-id="{{ $payment->id }}"><span class="dropdown-icon"><i class="ti ti-circle-x text--danger"></i></span> @lang('Cancel')</button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        @include('partials.noData')
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if ($payments->hasPages())
+            {{ paginateLinks($payments) }}
+        @endif
+    </div>
+
+    <div class="col-12">
+        <div class="custom--offcanvas offcanvas offcanvas-end" tabindex="-1" id="depositDetails" aria-labelledby="depositDetailsLabel">
+            <div class="offcanvas-header">
+                 <h5 class="offcanvas-title" id="depositDetailsLabel">@lang('Payment Details')</h5>
+                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                 <h6 class="mb-2">@lang('Basic Information')</h6>
+                 <table class="table table-borderless mb-3">
+                      <tbody class="basic-details"></tbody>
+                 </table>
+
+                 <div class="user-data"></div>
+            </div>
+       </div>
+    </div>
+
+    <div class="col-12">
+        <div class="custom--modal modal fade" id="cancelDepositModal" tabindex="-1" aria-labelledby="cancelDepositModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                 <div class="modal-content">
+                      <button type="button" class="btn btn--sm btn--icon btn-outline--secondary modal-close" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-x"></i></button>
+                      <div class="modal-body modal-alert">
+                           <div class="text-center">
+                                <div class="modal-thumb">
+                                     <img src="{{ asset('assets/admin/images/light.png') }}" alt="Image">
+                                </div>
+                                <h2 class="modal-title" id="cancelDepositModalLabel">@lang('Cancel Payment Confirmation')</h2>
+                                <form action="{{ route('admin.payment.cancel') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id">
+                                    
+                                    <label class="form--label">@lang('Reason') :</label>
+                                    <textarea class="form--control form--control--sm" name="admin_feedback" required></textarea>
+
+                                    <div class="d-flex justify-content-center gap-2 mt-3">
+                                        <button class="btn btn--sm btn--base" type="submit">@lang('Yes')</button>
+                                        <button type="button" class="btn btn--sm btn-outline--base" data-bs-dismiss="modal">@lang('No')</button>
+                                    </div>
+                                </form>
+                           </div>
+                      </div>
+                 </div>
+            </div>
+       </div>
+    </div>
+
+    <x-decisionModal />
+@endsection
+
+@push('breadcrumb')
+    <x-searchForm placeholder="TRX / Username" dateSearch="yes" />
+@endpush
+
+@push('page-script')
+    <script>
+        (function ($) {
+            "use strict";
+
+            $('.detailBtn').on('click', function () {
+                let userData   = $(this).data('user_data');
+                let statusHtml = ``;
+
+                if ($(this).data('status') == 1) {
+                    statusHtml += `<span class="badge badge--success">@lang('Done')</span>`;
+                } else if ($(this).data('status') == 2) {
+                    statusHtml += `<span class="badge badge--warning">@lang('Pending')</span>`;
+                } else {
+                    statusHtml += `<span class="badge badge--danger">@lang('Canceled')</span>`
+                }
+
+                let basicHtml  = `<tr>
+                                    <td class="fw-bold">@lang('Date')</td>
+                                    <td>${$(this).data('date')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Trx Number')</td>
+                                    <td>${$(this).data('trx')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Username')</td>
+                                    <td>${$(this).data('username')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Method')</td>
+                                    <td>${$(this).data('method')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Amount')</td>
+                                    <td>${$(this).data('amount')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Charge')</td>
+                                    <td>${$(this).data('charge')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('After Charge')</td>
+                                    <td>${$(this).data('after_charge')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Rate')</td>
+                                    <td>${$(this).data('rate')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Payable')</td>
+                                    <td>${$(this).data('payable')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">@lang('Status')</td>
+                                    <td>${statusHtml}</td>
+                                </tr>`;
+
+                if ($(this).data('admin_feedback')) {
+                    basicHtml += `<tr>
+                                    <td class="fw-bold">@lang('Admin Feedback')</td>
+                                    <td>${$(this).data('admin_feedback')}</td>
+                                </tr>`;
+                }
+
+                $('.basic-details').html(basicHtml);
+
+                if (userData) {                    
+                    let fileDownloadUrl = '{{ route("admin.file.download",["filePath" => "verify"]) }}';
+                    let infoHtml        = `<h6 class="mb-2">@lang('Payment User Data')</h6>
+                                            <table class="table table-borderless mb-3">
+                                                <tbody>`;
+    
+                    userData.forEach(element => {
+                        if (!element.value) { return; }
+
+                        if(element.type != 'file') {
+                            infoHtml += `<tr>
+                                            <td class="fw-bold">${element.name}</td>
+                                            <td>${element.value}</td>
+                                        </tr>`;
+                        } else {
+                            infoHtml += `<tr>
+                                            <td class="fw-bold">${element.name}</td>
+                                            <td>
+                                                <a href="${fileDownloadUrl}&fileName=${element.value}" class="btn btn--sm btn-outline--secondary">
+                                                    <i class="ti ti-download"></i> @lang('Attachment')
+                                                </a>
+                                            </td>
+                                        </tr>`;
+                        }
+                    });
+
+                    infoHtml += `</table>
+                            </tbody>`;
+
+                    $('.user-data').html(infoHtml);
+                } else {
+                    $('.user-data').empty();
+                }
+            });
+
+            $('.cancelBtn').on('click', function () {
+                let modal = $('#cancelDepositModal');
+                modal.find('[name=id]').val($(this).data('id'));
+                modal.modal('show');
+            });
+        })(jQuery);
+    </script>
+@endpush

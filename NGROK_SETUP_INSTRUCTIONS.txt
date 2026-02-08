@@ -1,0 +1,77 @@
+# Ngrok Installation and Laravel Deployment Guide
+
+## Step 1: Install Ngrok
+
+1. Go to https://ngrok.com/download
+2. Download the Windows ZIP file
+3. Extract the ngrok.exe file to a folder (e.g., C:\ngrok\)
+4. Add that folder to your system PATH:
+   - Press Windows Key + R, type sysdm.cpl, press Enter
+   - Click "Environment Variables"
+   - Under "System Variables", find "Path", click "Edit"
+   - Click "New" and add the path where you extracted ngrok (e.g., C:\ngrok\)
+   - Click OK to save
+
+## Step 2: Authenticate Ngrok (Optional but Recommended)
+
+If you have an ngrok account:
+1. Sign up at https://dashboard.ngrok.com/signup
+2. Get your authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
+3. Run this command in Command Prompt/Terminal:
+   ```
+   ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+   ```
+
+## Step 3: Start Your Laravel Application
+
+1. Open Command Prompt/Powershell in your project directory
+2. Start your Laravel application:
+   ```
+   php artisan serve
+   ```
+   Your app will be running on http://127.0.0.1:8000
+
+## Step 4: Expose Your Application with Ngrok
+
+1. Open a NEW Command Prompt/Powershell window in any directory
+2. Run ngrok to create a tunnel to your Laravel app:
+   ```
+   ngrok http 8000
+   ```
+3. Ngrok will provide you with a public URL (e.g., https://xxxx-xx-xxx-xxx-xxx.ngrok.io)
+4. Share this URL to give others access to your local Laravel application
+
+## Step 5: Using the Deployment Script
+
+We've created a batch file to automate this process:
+
+1. Double-click `start-ngrok-deployment.bat` in your project folder
+2. The script will:
+   - Verify ngrok and PHP are installed
+   - Start your Laravel server
+   - Start ngrok tunnel on port 8000
+   - Show you the public URL
+
+## Important Notes:
+
+- Your .env file has been configured with the necessary settings
+- The application key has been generated and saved
+- Make sure your database is running (e.g., MySQL in Laragon/XAMPP)
+- The ngrok URLs are temporary and change each time you restart ngrok
+- Anyone with the ngrok URL can access your application, so be cautious when sharing
+
+## Troubleshooting:
+
+Q: Ngrok not found when running the batch file?
+A: Make sure ngrok is installed and added to your system PATH
+
+Q: Laravel server not starting?
+A: Ensure you're running the command from the correct project directory
+
+Q: Database connection errors?
+A: Make sure your database server is running (Laragon/XAMPP)
+
+Q: Assets (CSS, JS) not loading properly?
+A: This is common with ngrok; the application should still function correctly
+
+For more detailed instructions, see NGROK_DEPLOYMENT_SETUP.md
