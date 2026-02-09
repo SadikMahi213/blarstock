@@ -184,6 +184,57 @@ class ImageController extends Controller
         }
     }
 
+    private function processAndStoreImage($file, $directory, $setting) {
+        if (!$file) return null;
+
+        $fileName = uniqid() . time() . '.' . $file->getClientOriginalExtension();
+        $manager = new ImageManager(new Driver());
+        
+        $basePath = storage_path('app/public/images');
+        $subDirs = ['original', 'preview', 'watermark'];
+        
+        foreach ($subDirs as $dir) {
+            $path = $basePath . '/' . $dir . '/' . $directory;
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+        }
+        
+        // 1. Original (No Watermark)
+        $original = $manager->read($file);
+        $originalWidth = $original->width();
+        $originalHeight = $original->height();
+        $original->save($basePath . '/original/' . $directory . '/' . $fileName, 100);
+        
+        // 2. Preview (No Watermark, Balanced Quality)
+        $preview = $manager->read($file);
+        if ($preview->width() > 1200) {
+            $preview->scale(width: 1200);
+        }
+        $preview->save($basePath . '/preview/' . $directory . '/' . $fileName, 85);
+        
+        // 3. Watermarked
+        $protected = $manager->read($file);
+        if ($setting->watermark == ManageStatus::ACTIVE) {
+            try {
+                $wmPath = public_path(getFilePath('watermarkImage') . '/watermark.png');
+                if (file_exists($wmPath)) {
+                    $watermark = $manager->read($wmPath);
+                    $wmWidth = round($protected->width() * 0.4);
+                    $watermark->scale(width: $wmWidth);
+                    $protected->place($watermark, 'center', 0, 0, 30);
+                }
+            } catch (\Exception $e) {}
+        }
+        $protected->save($basePath . '/watermark/' . $directory . '/' . $fileName, 90);
+        
+        return [
+            'fileName' => $fileName,
+            'width'    => $originalWidth,
+            'height'   => $originalHeight
+        ];
+    }
+
     protected function processImageData($image, $request, $isUpdate = false) {
         $user    = auth()->user();
         $setting = bs();
@@ -195,164 +246,32 @@ class ImageController extends Controller
 
         $removeFileMethod = $setting->storage_type == ManageStatus::LOCAL_STORAGE ? 'removeFile' : 'removeFileFromStorage';
 
-        // Handle multiple photo uploads
+        // Handle photo uploads
+        $photoFile = null;
         if ($request->hasFile('photos')) {
-            $photos = $request->file('photos');
-            $photosArray = is_array($photos) ? $photos : [$photos]; // Convert to array if single file
-            
-            if(!empty($photosArray)) {
-                // Use the first photo for the main image record
-                $photoFile = $photosArray[0];
-                
-                try {
-                    $fileName = uniqid() . time() . '.' . $photoFile->getClientOriginalExtension();
-                    $manager = new ImageManager(new Driver());
-
-                    $photo = $manager->read($photoFile);
-
-                    if ($setting->watermark == ManageStatus::ACTIVE) {
-                        try {
-                             $watermark = $manager->read(getFilePath('watermarkImage') . '/watermark.png' )
-                                        ->cover($photo->width(), $photo->height())
-                                        ->rotate(45, 'transparent');
-
-                            $photo->cover($photo->width(), $photo->height());
-                            
-                            $photo->place($watermark, 'center', 0, 0, 25);
-                        } catch (\Exception $exp) {
-                            $toast[] = ['error', $exp->getMessage()];
-                            return back()->withToasts($toast)->throwResponse();
-                        }
-                        
-                    }
-
-                    $thumb = $manager->read($photoFile);
-                    
-                    $originalHeight = $thumb->height();
-                    $thumbHeight    = round($originalHeight * 0.29);
-
-                    $thumb->resize(284, $thumbHeight, function($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    });
-
-                    $image->image_width  = $thumb->width();
-                    $image->image_height = $thumb->height();
-
-                    if ($setting->storage_type == ManageStatus::LOCAL_STORAGE) {
-                        if (!file_exists($imageLocation)) {
-                             mkdir($imageLocation, 0755, true);
-                        }
-
-                        $photo->save($imageLocation . '/' . $fileName);
-                        $thumb->save($imageLocation . '/thumb_' . $fileName);
-
-                        if ($image->image_name) {
-                            removeFile(getFilePath('stockImage') . '/' . $image->image_name);
-                            removeFile(getFilePath('stockImage') . '/' . $image->thumb);
-                        }
-
-                    } else {
-                        $servers = [ManageStatus::FTP_STORAGE => 'ftp', ManageStatus::WASABI_STORAGE => 'wasabi', ManageStatus::DIGITAL_OCEAN_STORAGE => 'do', ManageStatus::VULTR_STORAGE => 'vultr'];
-                        $server  = $servers[$setting->storage_type] ?? [];
-
-                        if ($server) {
-                            $storageManager = new StorageManager($server);
-                            $storageManager->path = 'images/' . $directory;
-                            $storageManager->old  = $image->image_name ?? null;
-
-                            $storageManager->uploadImage($photo, $fileName);
-                            $storageManager->uploadImage($thumb, $fileName, true);
-                        }
-
-                        if ($image->image_name) {
-                            removeFileFromStorageManager(getFilePath($image->image_name));
-                            removeFileFromStorageManager(getFilePath($image->thumb));
-                        }
-                    }
-
-                    $image->image_name = $directory . '/' . $fileName;
-                    $image->thumb      = $directory . '/thumb_' . $fileName;
-                 } catch (\Exception $exp) {
-                     $toast[] = ['error', 'Photo upload fail'];
-                     return back()->withToasts($toast)->throwResponse();
-                 }
-            }
-        } elseif ($request->hasFile('photo')) {
-            // Fallback to single photo upload for backward compatibility
-            try {
-                $fileName = uniqid() . time() . '.' . $request->photo->getClientOriginalExtension();
-                $manager = new ImageManager(new Driver());
-
-                $photo = $manager->read($request->photo);
-
-                if ($setting->watermark == ManageStatus::ACTIVE) {
-                    try {
-                         $watermark = $manager->read(getFilePath('watermarkImage') . '/watermark.png' )
-                                    ->cover($photo->width(), $photo->height())
-                                    ->rotate(45, 'transparent');
-
-                        $photo->cover($photo->width(), $photo->height());
-                        
-                        $photo->place($watermark, 'center', 0, 0, 25);
-                    } catch (\Exception $exp) {
-                        $toast[] = ['error', $exp->getMessage()];
-                        return back()->withToasts($toast)->throwResponse();
-                    }
-                    
-                }
-
-                $thumb = $manager->read($request->photo);
-                
-                $originalHeight = $thumb->height();
-                $thumbHeight    = round($originalHeight * 0.29);
-
-                $thumb->resize(284, $thumbHeight, function($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                });
-
-                $image->image_width  = $thumb->width();
-                $image->image_height = $thumb->height();
-
-                if ($setting->storage_type == ManageStatus::LOCAL_STORAGE) {
-                    if (!file_exists($imageLocation)) {
-                         mkdir($imageLocation, 0755, true);
-                    }
-
-                    $photo->save($imageLocation . '/' . $fileName);
-                    $thumb->save($imageLocation . '/thumb_' . $fileName);
-
-                    if ($image->image_name) {
-                        removeFile(getFilePath('stockImage') . '/' . $image->image_name);
-                        removeFile(getFilePath('stockImage') . '/' . $image->thumb);
-                    }
-
-                } else {
-                    $servers = [ManageStatus::FTP_STORAGE => 'ftp', ManageStatus::WASABI_STORAGE => 'wasabi', ManageStatus::DIGITAL_OCEAN_STORAGE => 'do', ManageStatus::VULTR_STORAGE => 'vultr'];
-                    $server  = $servers[$setting->storage_type] ?? [];
-
-                    if ($server) {
-                        $storageManager = new StorageManager($server);
-                        $storageManager->path = 'images/' . $directory;
-                        $storageManager->old  = $image->image_name ?? null;
-
-                        $storageManager->uploadImage($photo, $fileName);
-                        $storageManager->uploadImage($thumb, $fileName, true);
-                    }
-
-                    if ($image->image_name) {
-                        removeFileFromStorageManager(getFilePath($image->image_name));
-                        removeFileFromStorageManager(getFilePath($image->thumb));
-                    }
-                }
-
-                $image->image_name = $directory . '/' . $fileName;
-                $image->thumb      = $directory . '/thumb_' . $fileName;
-             } catch (\Exception $exp) {
-                 $toast[] = ['error', 'Photo upload fail'];
-                 return back()->withToasts($toast)->throwResponse();
+             $photos = $request->file('photos');
+             $photosArray = is_array($photos) ? $photos : [$photos];
+             if(!empty($photosArray)) {
+                 $photoFile = $photosArray[0];
              }
+        } elseif ($request->hasFile('photo')) {
+             $photoFile = $request->photo;
+        }
+
+        if ($photoFile) {
+            try {
+                $result = $this->processAndStoreImage($photoFile, $directory, $setting);
+                
+                if ($result) {
+                    $image->image_width  = $result['width'];
+                    $image->image_height = $result['height'];
+                    $image->image_name   = $directory . '/' . $result['fileName'];
+                    $image->thumb        = $directory . '/' . $result['fileName']; // Same name, imageUrl helper handles versioning
+                }
+            } catch (\Exception $exp) {
+                $toast[] = ['error', 'Photo upload failed: ' . $exp->getMessage()];
+                return back()->withToasts($toast)->throwResponse();
+            }
         }
 
         if ($request->hasFile('video')) {
@@ -563,155 +482,43 @@ class ImageController extends Controller
                 $image->status = $setting->auto_approval ? ManageStatus::IMAGE_APPROVED : ManageStatus::IMAGE_PENDING;
 
                 // Image Processing 
-                $fileName = uniqid() . time() . '.' . $file->getClientOriginalExtension();
-                $manager = new ImageManager(new Driver());
-                
-                // Read image
-                $photo = $manager->read($file);
-                
-                // OPTIMIZATION: Resize huge images early to save memory
-                if ($photo->width() > 3000) {
-                    $photo->scale(width: 3000);
-                }
-
-                // Watermark
-                if ($setting->watermark == ManageStatus::ACTIVE) {
-                    try {
-                        $watermarkPath = getFilePath('watermarkImage') . '/watermark.png';
-                        if (file_exists($watermarkPath)) {
-                             $watermark = $manager->read($watermarkPath)
-                                    ->cover($photo->width(), $photo->height())
-                                    ->rotate(45, 'transparent');
-                            $photo->place($watermark, 'center', 0, 0, 25);
-                            unset($watermark); // Free watermark memory
-                        }
-                    } catch (\Exception $e) {
-                         // Continue
-                    }
-                }
-
-                // Create thumbnail from the (possibly resized) photo
-                // Cloning a large image is expensive in GD. 
-                // Since we need to save the "main" photo separate from "thumb", we usually clone.
-                // However, we can save the main photo first, then resize IT to become the thumb, avoiding a clone if we don't need the original object afterwards.
-                // But we upload both.
-                // Let's optimize: save main photo. Then resize $photo to be the thumb. Saves one clone.
-                
-                // Prepare paths
-                $image->image_name = $directory . '/' . $fileName;
-                $image->thumb = $directory . '/thumb_' . $fileName;
-
-                // Capture original dimensions before any destructive resize
-                $image->image_width = $photo->width();
-                $image->image_height = $photo->height();
-
-                if ($setting->storage_type == ManageStatus::LOCAL_STORAGE) {
-                    if (!file_exists($imageLocation)) {
-                         mkdir($imageLocation, 0755, true);
-                    }
-                    $photo->save($imageLocation . '/' . $fileName);
+                try {
+                    $result = $this->processAndStoreImage($file, $directory, $setting);
                     
-                    // Reuse $photo object for thumbnail to save memory (avoid cloning)
-                    // Destructive resize
-                    $photo->resize(284, round(284 * ($image->image_height / $image->image_width)), function($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    });
+                    if (!$result) throw new \Exception("Processing failed");
+
+                    $image->image_width  = $result['width'];
+                    $image->image_height = $result['height'];
+                    $image->image_name   = $directory . '/' . $result['fileName'];
+                    $image->thumb        = $directory . '/' . $result['fileName'];
+                    $image->save();
+
+                    // Create Downloadable ImageFile (High Res)
+                    $imageFile = new ImageFile();
+                    $imageFile->track_id   = getTrx();
+                    $imageFile->image_id   = $image->id;
+                    $imageFile->resolution = $image->image_width . 'x' . $image->image_height;
+                    $imageFile->is_free    = (isset($metadata['price']) && $metadata['price'] > 0) ? 0 : 1;
+                    $imageFile->price      = $metadata['price'] ?? 0;
+                    $imageFile->status     = 1;
+                    $imageFile->file       = $directory . '/' . $result['fileName'];
+                    $imageFile->save();
                     
-                    $photo->save($imageLocation . '/thumb_' . $fileName);
-                } else {
-                     // Cloud storage needs explicit streams usually, so we might need to be careful reusing.
-                     // For safety in cloud/bulk, let's just do standard process but unset aggresively.
-                     
-                     // Re-reading logic for correctness:
-                     // 1. Get stats
-                     $image->image_width = $photo->width();
-                     $image->image_height = $photo->height();
-                     
-                     // 2. Save Main
-                     if ($setting->storage_type == ManageStatus::LOCAL_STORAGE) {
-                        $photo->save($imageLocation . '/' . $fileName);
-                     } else {
-                        // Cloud upload logic
-                        $storageManager = new StorageManager([ManageStatus::FTP_STORAGE => 'ftp'][$setting->storage_type] ?? []); 
-                        $server  = $servers[$setting->storage_type] ?? [];
-                        if ($server) {
-                            $storageManager = new StorageManager($server);
-                            $storageManager->path = 'images/' . $directory;
-                            $storageManager->uploadImage($photo, $fileName);
-                        }
-                     }
-                     
-                     // 3. Resize for Thumb (Destructive resize on $photo to save memory)
-                     $photo->resize(284, round(284 * ($photo->height() / $photo->width())), function($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                     });
-                     
-                     // 4. Save Thumb
-                     if ($setting->storage_type == ManageStatus::LOCAL_STORAGE) {
-                        $photo->save($imageLocation . '/thumb_' . $fileName);
-                     } else {
-                        if (isset($storageManager)) {
-                             $storageManager->uploadImage($photo, $fileName, true);
-                        }
+                    $successCount++;
+                    
+                    if ($setting->asset_approval_notify && $image->status == ManageStatus::IMAGE_APPROVED) {
+                        event(new AssetApproveEvent($image));
+                    }
+                } catch (\Exception $e) {
+                     $errorCount++;
+                     \Illuminate\Support\Facades\Log::error("Bulk Upload Error: " . $e->getMessage());
+                } finally {
+                     if ($iterationCount % 5 === 0) {
+                         gc_collect_cycles();
                      }
                 }
-                
-                // Correctness Check: $image->image_width/height should be the full res ones.
-                // We set them before resizing.
-
-                $image->save();
-
-                // Create Default ImageFile
-                $fileDir = now()->format('Y/m/d');
-                $filesLocation = getFilePath('stockFile') . '/' . $fileDir;
-                
-                $imageFile = new ImageFile();
-                $imageFile->track_id = getTrx();
-                $imageFile->image_id = $image->id;
-                $imageFile->resolution = $image->image_width . 'x' . $image->image_height;
-                $imageFile->is_free = (isset($metadata['price']) && $metadata['price'] > 0) ? 0 : 1;
-                $imageFile->price = $metadata['price'] ?? 0;
-                $imageFile->status = 1;
-
-                if ($setting->storage_type == ManageStatus::LOCAL_STORAGE) {
-                     if (!file_exists($filesLocation)) {
-                         mkdir($filesLocation, 0755, true);
-                    }
-                    $file->move($filesLocation, $fileName); 
-                    $imageFile->file = $fileDir . '/' . $fileName;
-                } else {
-                    $servers = [ManageStatus::FTP_STORAGE => 'ftp', ManageStatus::WASABI_STORAGE => 'wasabi', ManageStatus::DIGITAL_OCEAN_STORAGE => 'do', ManageStatus::VULTR_STORAGE => 'vultr'];
-                    $server  = $servers[$setting->storage_type] ?? [];
-                    if ($server) {
-                         $storageManager = new StorageManager($server);
-                         $storageManager->path = 'files/' . $fileDir;
-                         // Cloud file upload needs to handle the temporary file manually if 'move' isn't available
-                         // Implementation specific to StorageManager, assuming simple upload mapping
-                    }
-                }
-                
-                $imageFile->save();
-                $successCount++;
-                
-                if ($setting->asset_approval_notify && $image->status == ManageStatus::IMAGE_APPROVED) {
-                    event(new AssetApproveEvent($image));
-                }
-
             } catch (\Exception $e) {
                 $errorCount++;
-                \Illuminate\Support\Facades\Log::error("Bulk Upload Error: " . $e->getMessage());
-            } finally {
-                // EXPLICIT MEMORY CLEANUP
-                if (isset($photo)) unset($photo);
-                if (isset($manager)) unset($manager);
-                if (isset($watermark)) unset($watermark);
-                
-                // Force Garbage Collection every 5 images
-                if ($iterationCount % 5 === 0) {
-                    gc_collect_cycles();
-                }
             }
         }
 

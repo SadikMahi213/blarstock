@@ -73,15 +73,15 @@ class FileDetails {
         ];
 
         $data['stockImage'] = [
-            'path' => 'assets/universal/stock/images'
+            'path' => 'storage/images'
         ];
 
         $data['stockVideo'] = [
-            'path' => 'assets/universal/stock/videos'
+            'path' => 'storage/videos'
         ];
 
         $data['stockFile'] = [
-            'path' => 'assets/universal/stock/files'
+            'path' => 'storage/files'
         ];
 
         return $data;

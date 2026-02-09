@@ -113,11 +113,11 @@ class Image extends Model
      * @param string $size
      * @return string
      */
-    public function getImageUrl($size = 'medium')
+    public function getImageUrl($version = 'preview')
     {
         // Use existing helper functions
         if ($this->image_name) {
-            return imageUrl(getFilePath('stockImage'), $this->image_name);
+            return imageUrl(getFilePath('stockImage'), $this->image_name, $version);
         }
         
         return ''; // Return empty string for placeholder

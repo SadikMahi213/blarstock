@@ -81,8 +81,8 @@ class StorageManager
             $this->removeFile();
         }
 
-        $image = $image->stream();
-        $this->driver->put($this->path . $separator . $this->filename, $image->_toString());
+        $encoded = $image->encode();
+        $this->driver->put($this->path . $separator . $this->filename, (string) $encoded);
     }
 
     protected function uploadFile() {

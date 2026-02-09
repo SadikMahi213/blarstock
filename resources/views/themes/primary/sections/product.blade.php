@@ -24,7 +24,7 @@
                 @foreach($topAssets as $asset)
                     <div class="product__card {{ $asset->video ? 'product-video' : 'product-image' }}" data-title="{{ __($asset->title) }}">
                         <a href="{{ route('asset.detail', [encrypt($asset->id), slug($asset->title)]) }}" @if($asset->video) data-video-src="{{ videoFileUrl($asset->video) }}" @endif class="product__card__thumb">
-                            <img src="{{ imageUrl(getFilePath('stockImage'), $asset->thumb) }}" alt="Image">
+                            <img src="{{ imageUrl(getFilePath('stockImage'), $asset->thumb) }}" alt="Image" loading="lazy">
                         </a>
                         <div class="product__card__txt">
                             <p class="product__card__name">{{ __($asset->category->name) }}</p>

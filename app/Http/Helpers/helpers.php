@@ -92,9 +92,33 @@ function getFileSize($key) {
 }
 
 function getImage($image, $size = null, $avatar = false) {
-    $clean = '';
+    if (!$image) {
+        if ($avatar) return asset('assets/universal/images/avatar.png');
+        if ($size) return route('placeholder.image', $size);
+        return asset('assets/universal/images/default.png');
+    }
 
-    if (file_exists($image) && is_file($image)) return asset($image) . $clean;
+    $clean = '';
+    
+    // Determine the physical path for verification from project root
+    $checkPath = null;
+    if (strpos($image, 'assets/') === 0) {
+        $checkPath = public_path($image);
+    } elseif (strpos($image, 'storage/') === 0) {
+        // Map 'storage/...' to 'storage/app/public/...'
+        $checkPath = storage_path('app/public/' . substr($image, 8));
+    } else {
+        // Fallback for direct project root paths or absolute paths
+        $checkPath = base_path($image);
+        if (!file_exists($checkPath)) {
+             $checkPath = public_path($image);
+        }
+    }
+
+    if ($checkPath && file_exists($checkPath) && is_file($checkPath)) {
+        // Return relative URL for best compatibility
+        return '/' . ltrim($image, '/') . $clean;
+    }
 
     if ($avatar) {
         return asset('assets/universal/images/avatar.png');
@@ -490,24 +514,51 @@ function videoFileUrl($fileName) {
     }
 }
 
-function imageUrl($directory = null, $image = null, $size = null) {
+function imageUrl($directory = null, $image = null, $version = 'preview') {
     if (!$image) {
-        return getImage('/' . $size);
+        return getImage('/' . $version);
     }
 
     $setting = bs();
 
+    // Map versions to subfolders
+    $versionFolder = 'preview';
+    if ($version == 'original') $versionFolder = 'original';
+    elseif ($version == 'watermark') $versionFolder = 'watermark';
+
     switch ($setting->storage_type) {
         case ManageStatus::FTP_STORAGE:
-            return ($setting->ftp?->host_domain ?? '') . '/images/' . $image;
+            return ($setting->ftp?->host_domain ?? '') . '/images/' . $versionFolder . '/' . $image;
 
         case ManageStatus::WASABI_STORAGE:
         case ManageStatus::DIGITAL_OCEAN_STORAGE:
         case ManageStatus::VULTR_STORAGE:
-            return getS3FileUri($image);
+            return getS3FileUri($versionFolder . '/' . $image);
 
         default:
-            return getImage($directory ? $directory . '/' . $image : $image, $size);
+            // 1. Check if new versioned path exists in storage/app/public/...
+            $newPath = $directory . '/' . $versionFolder . '/' . $image;
+            $physicalPath = storage_path('app/public/' . substr($newPath, 8));
+            
+            if (file_exists($physicalPath) && is_file($physicalPath)) {
+                return getImage($newPath);
+            }
+            
+            // 2. Check if old flat path exists in storage/app/public/...
+            $oldStoragePath = $directory . '/' . $image;
+            $physicalOldPath = storage_path('app/public/' . substr($oldStoragePath, 8));
+            if (file_exists($physicalOldPath) && is_file($physicalOldPath)) {
+                return getImage($oldStoragePath);
+            }
+
+            // 3. Check legacy assets path: public/assets/universal/stock/images/...
+            $legacyAssetPath = 'assets/universal/stock/images/' . $image;
+            if (file_exists(public_path($legacyAssetPath)) && is_file(public_path($legacyAssetPath))) {
+                return getImage($legacyAssetPath);
+            }
+            
+            // Fallback
+            return getImage($directory . '/' . $image);
     }
 }
 

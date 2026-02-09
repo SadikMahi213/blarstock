@@ -59,7 +59,7 @@
                                    @if ($asset->video)
                                         <video src="{{ videoFileUrl($asset->video) }}" controls autoplay muted loop></video>
                                    @elseif ($asset->image_name)
-                                        <img src="{{ imageUrl(getFilePath('stockImage'), $asset->image_name) }}" alt="@lang('Image')">
+                                        <img src="{{ imageUrl(getFilePath('stockImage'), $asset->image_name, 'watermark') }}" alt="@lang('Image')">
                                    @endif
                               </div>
                               <p class="product-details__inner__caption">{{ __($asset->title) }}</p>
@@ -203,7 +203,7 @@
                                              <li>
                                                   <div class="product__card {{ $relatedAsset->video ? 'product-video' : 'product-image' }}">
                                                        <a href="{{ route('asset.detail', [encrypt($relatedAsset->id), slug($relatedAsset->title)]) }}" @if($relatedAsset->video) data-video-src="{{ videoFileUrl($relatedAsset->video) }}" @endif class="product__card__thumb">
-                                                            <img src="{{ imageUrl(getFilePath('stockImage'), $relatedAsset->thumb) }}" alt="Image">
+                                                            <img src="{{ imageUrl(getFilePath('stockImage'), $relatedAsset->thumb) }}" alt="Image" loading="lazy">
                                                        </a>
                                                        <div class="product__card__txt">
                                                             <p class="product__card__name">{{ __($relatedAsset->category->name) }}</p>
@@ -275,7 +275,7 @@
                                              <li>
                                                   <div class="product__card {{ $authorAsset->video ? 'product-video' : 'product-image' }}" title="{{ __($authorAsset->title) }}">
                                                        <a href="{{ route('asset.detail', [encrypt($authorAsset->id), slug($authorAsset->title)]) }}" @if($authorAsset->video) data-video-src="{{ videoFileUrl($authorAsset->video) }}" @endif class="product__card__thumb">
-                                                            <img src="{{ imageUrl(getFilePath('stockImage'), $authorAsset->thumb) }}" alt="Image">
+                                                            <img src="{{ imageUrl(getFilePath('stockImage'), $authorAsset->thumb) }}" alt="Image" loading="lazy">
                                                        </a>
                                                        <div class="product__card__txt">
                                                             <p class="product__card__name">{{ __($authorAsset->category->name) }}</p>
